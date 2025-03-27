@@ -1,16 +1,12 @@
-# Wikipedia Plugin
+#  Wolfram Alpha Plugin
 
 ```python
-from ovos_wikipedia_solver import WikipediaSolver
+from ovos_wolfram_alpha_solver import WolframAlphaSolver
 
-s = WikipediaSolver()
-print(s.get_spoken_answer("quem é Elon Musk", "pt"))
+s = WolframAlphaSolver()
+print(s.spoken_answer("quem é Elon Musk", lang="pt"))
+print(s.spoken_answer("venus", lang="en"))
+print(s.spoken_answer("elon musk", lang="en"))
+print(s.spoken_answer("mercury", lang="en"))
 
-query = "who is Isaac Newton"
-print(s.extract_keyword(query, "en-us"))
-assert s.extract_keyword(query, "en-us") == "Isaac Newton"
-
-print(s.get_spoken_answer("venus", "en"))
-print(s.get_spoken_answer("elon musk", "en"))
-print(s.get_spoken_answer("mercury", "en"))
 ```
