@@ -1,12 +1,12 @@
 # Changelog
 
-## [0.0.3a1](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/tree/0.0.3a1) (2025-06-08)
+## [0.0.4a1](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/tree/0.0.4a1) (2025-11-05)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/compare/0.0.2...0.0.3a1)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/compare/0.0.3...0.0.4a1)
 
 **Merged pull requests:**
 
-- fix: compatibility with ovos-plugin-manager 1.X.X [\#3](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/pull/3) ([JarbasAl](https://github.com/JarbasAl))
+- Update ovos-plugin-manager version range [\#5](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/pull/5) ([JarbasAl](https://github.com/JarbasAl))
 
 
 
