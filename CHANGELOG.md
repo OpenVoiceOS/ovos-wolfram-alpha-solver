@@ -1,12 +1,12 @@
 # Changelog
 
-## [0.0.4a1](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/tree/0.0.4a1) (2025-11-05)
+## [0.0.5a1](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/tree/0.0.5a1) (2025-12-18)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/compare/0.0.3...0.0.4a1)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/compare/0.0.4...0.0.5a1)
 
 **Merged pull requests:**
 
-- Update ovos-plugin-manager version range [\#5](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/pull/5) ([JarbasAl](https://github.com/JarbasAl))
+- chore: Configure Renovate [\#7](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/pull/7) ([renovate[bot]](https://github.com/apps/renovate))
 
 
 
