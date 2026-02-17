@@ -11,12 +11,11 @@
 # limitations under the License.
 import tempfile
 from os.path import join, isfile
-from typing import Optional
+from typing import Optional, List, Tuple
 
 import requests
 from ovos_config import Configuration
-from ovos_plugin_manager.templates.language import LanguageTranslator, LanguageDetector
-from ovos_plugin_manager.templates.solvers import QuestionSolver
+from ovos_plugin_manager.templates.agents import RetrievalEngine
 from ovos_utils.text_utils import rm_parentheses
 
 
@@ -100,14 +99,9 @@ class WolframAlphaApi:
         return path
 
 
-class WolframAlphaSolver(QuestionSolver):
-    def __init__(self, config=None,
-                 translator: Optional[LanguageTranslator] = None,
-                 detector: Optional[LanguageDetector] = None):
-        super().__init__(config=config, priority=25,
-                         internal_lang="en",
-                         enable_tx=True, enable_cache=False,
-                         translator=translator, detector=detector)
+class WolframAlphaSolver(RetrievalEngine):
+    def __init__(self, config=None):
+        super().__init__(config=config)
         self.api = WolframAlphaApi(key=self.config.get("appid") or "Y7R353-9HQAAL8KKA")
 
     @staticmethod
@@ -164,24 +158,26 @@ class WolframAlphaSolver(QuestionSolver):
         summary = " ".join(words)
         return rm_parentheses(summary)
 
-    # data api
-    def get_data(self, query: str,
-                 lang: Optional[str] = None,
-                 units: Optional[str] = None):
+    def query(self, query: str, lang: Optional[str] = None, k: int = 3) -> List[Tuple[str, float]]:
         """
-       query assured to be in self.default_lang
-       return a dict response
-       """
-        units = units or Configuration().get("system_unit", "metric")
-        return self.api.full_results(query, units=units)
+        Searches the knowledge base for relevant documents or data.
+
+        Args:
+            query: The search string.
+            lang: BCP-47 language code.
+            k: The maximum number of results to return.
+
+        Returns:
+            List of tuples (content, score) for the top k matches.
+        """
+        return [(self.get_spoken_answer(query, lang), 0.8)]
 
     # image api (simple)
     def get_image(self, query: str,
                   lang: Optional[str] = None,
                   units: Optional[str] = None):
         """
-        query assured to be in self.default_lang
-        return path/url to a single image to acompany spoken_answer
+        return path/url to a single image to accompany spoken_answer
         """
         units = units or Configuration().get("system_unit", "metric")
         return self.api.get_image(query, units=units)
@@ -190,10 +186,6 @@ class WolframAlphaSolver(QuestionSolver):
     def get_spoken_answer(self, query: str,
                           lang: Optional[str] = None,
                           units: Optional[str] = None):
-        """
-        query assured to be in self.default_lang
-        return a single sentence text response
-        """
         units = units or Configuration().get("system_unit", "metric")
         answer = self.api.spoken(query, units=units)
         bad_answers = ["no spoken result available",
@@ -201,66 +193,6 @@ class WolframAlphaSolver(QuestionSolver):
         if answer.lower().strip() in bad_answers:
             return None
         return answer
-
-    def get_expanded_answer(self, query,
-                            lang: Optional[str] = None,
-                            units: Optional[str] = None):
-        """
-        query assured to be in self.default_lang
-        return a list of ordered steps to expand the answer, eg, "tell me more"
-
-        {
-            "title": "optional",
-            "summary": "speak this",
-            "img": "optional/path/or/url
-        }
-        """
-        data = self.get_data(query, lang, units)
-        # these are returned in spoken answer or otherwise unwanted
-        skip = ['Input interpretation', 'Interpretation',
-                'Result', 'Value', 'Image']
-        steps = []
-
-        for pod in data['queryresult'].get('pods', []):
-            title = pod["title"]
-            if title in skip:
-                continue
-
-            for sub in pod["subpods"]:
-                subpod = {"title": title}
-                summary = sub["img"]["alt"]
-                subtitle = sub.get("title") or sub["img"]["title"]
-                if subtitle and subtitle != summary:
-                    subpod["title"] = subtitle
-
-                if summary == title:
-                    # it's an image result
-                    subpod["img"] = sub["img"]["src"]
-                elif summary.startswith("(") and summary.endswith(")"):
-                    continue
-                else:
-                    subpod["summary"] = summary
-                steps.append(subpod)
-
-        # do any extra processing here
-        prev = ""
-        for idx, step in enumerate(steps):
-            # merge steps
-            if step["title"] == prev:
-                summary = steps[idx - 1]["summary"] + "\n" + step["summary"]
-                steps[idx]["summary"] = summary
-                steps[idx]["img"] = step.get("img") or steps[idx - 1].get("img")
-                steps[idx - 1] = None
-            elif step.get("summary") and step["title"]:
-                # inject title in speech, eg we do not want wolfram to just read family names without context
-                steps[idx]["summary"] = step["title"] + ".\n" + step["summary"]
-
-            # normalize summary
-            if step.get("summary"):
-                steps[idx]["summary"] = self.make_speakable(steps[idx]["summary"])
-
-            prev = step["title"]
-        return [s for s in steps if s]
 
 
 WOLFRAMALPHA_PERSONA = {
@@ -273,10 +205,6 @@ WOLFRAMALPHA_PERSONA = {
 
 if __name__ == "__main__":
     s = WolframAlphaSolver()
-    print(s.spoken_answer("quem é Elon Musk", lang="pt"))
-    # ('who is Elon Musk', <CQSMatchLevel.GENERAL: 3>, 'The Musk family is a wealthy family of South African origin that is largely active in the United States and Canada.',
-    # {'query': 'who is Elon Musk', 'image': None, 'title': 'Musk Family',
-    # 'answer': 'The Musk family is a wealthy family of South African origin that is largely active in the United States and Canada.'})
 
     print(s.get_spoken_answer("venus", "en"))
     print(s.get_spoken_answer("elon musk", "en"))
