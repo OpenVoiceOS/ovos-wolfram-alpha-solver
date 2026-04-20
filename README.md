@@ -32,23 +32,40 @@ pip install ovos-wolfram-alpha-plugin
 
 `WolframAlphaRetrievalEngine` implements the `RetrievalEngine` OPM interface. It calls the Wolfram Alpha spoken-answer API and translates non-English queries transparently.
 
+Wolfram Alpha excels at: unit conversions, scientific constants, maths, statistics, chemical properties, astronomy, nutrition, historical dates, and any factual question with a definite answer.
+
 ```python
 from ovos_wolfram_alpha_plugin import WolframAlphaRetrievalEngine
 
 engine = WolframAlphaRetrievalEngine(config={"appid": "YOUR-KEY"})
 
-# RAG interface: List[Tuple[str, float]]  (answer, score)
-passages = engine.query("speed of light", lang="en")
+# Maths & conversions
+engine.get_spoken_answer("integral of x^2 sin(x)", lang="en")
+engine.get_spoken_answer("100 miles in kilometers", lang="en")
+engine.get_spoken_answer("1000 USD in EUR", lang="en")
 
-# Spoken answer
-print(engine.get_spoken_answer("venus", lang="en"))
+# Science & constants
+engine.get_spoken_answer("speed of light", lang="en")
+engine.get_spoken_answer("boiling point of ethanol", lang="en")
+engine.get_spoken_answer("distance from Earth to Mars", lang="en")
 
-# Image result (returns local file path)
-print(engine.get_image("mercury", lang="en"))
+# Factual lookups
+engine.get_spoken_answer("population of Brazil", lang="en")
+engine.get_spoken_answer("calories in 100g of almonds", lang="en")
+engine.get_spoken_answer("when was the Eiffel Tower built", lang="en")
+
+# Non-English (translated automatically)
+engine.get_spoken_answer("massa do Sol", lang="pt")
+
+# Image result (returns local file path to a Wolfram visual)
+engine.get_image("benzene molecular structure", lang="en")
 
 # Full structured pod results
-for pod in engine.get_expanded_answer("elon musk", lang="en"):
+for pod in engine.get_expanded_answer("Neptune", lang="en"):
     print(pod)
+
+# RAG interface: List[Tuple[str, float]]  (answer, score)
+passages = engine.query("half-life of carbon-14", lang="en")
 ```
 
 ### Translation
