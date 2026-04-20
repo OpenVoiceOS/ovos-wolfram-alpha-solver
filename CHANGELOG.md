@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.0a1](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/tree/1.0.0a1) (2026-04-20)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/compare/0.0.5a2...1.0.0a1)
+
+**Breaking changes:**
+
+- feat!: add toolbox, add llm api, add CI workflows, tests and README [\#19](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/pull/19) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [0.0.5a2](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/tree/0.0.5a2) (2025-12-19)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/compare/0.0.5a1...0.0.5a2)
