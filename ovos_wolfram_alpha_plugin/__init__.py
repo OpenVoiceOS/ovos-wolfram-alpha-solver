@@ -367,5 +367,4 @@ WOLFRAMALPHA_PERSONA = {
 
 if __name__ == "__main__":
     s = WolframAlphaRetrievalEngine()
-    #print(s.api.spoken("mercury"))
-    print(s.api.query_recognizer("Who is the author of The Fault in our Stars"))
+    print(s.api.spoken("Who is the author of The Fault in our Stars"))
