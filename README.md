@@ -4,7 +4,9 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 [![Python](https://img.shields.io/badge/python-%3E%3D3.10-blue)](https://www.python.org/)
 
-Wolfram Alpha integration for [OpenVoiceOS](https://openvoiceos.org). Provides a **retrieval engine** for RAG pipelines and an **agent toolbox** for tool-using agents, both as standard OPM plugins.
+[Wolfram Alpha](https://www.wolframalpha.com/) integration for [OpenVoiceOS](https://openvoiceos.org). Provides a **retrieval engine** for RAG pipelines and an **agent toolbox** for tool-using agents, both as standard OPM plugins.
+
+Wolfram Alpha excels at questions with a single definitive answer: maths, unit conversions, scientific constants, chemical properties, astronomy, nutrition, geography, and historical dates. It is not a search engine — it computes answers from curated data.
 
 An [API key](https://products.wolframalpha.com/api/) is required. A demo key is bundled for development but is rate-limited and should not be used in production.
 
@@ -22,17 +24,14 @@ pip install ovos-wolfram-alpha-plugin
 
 | Entry point | Class | Use case |
 |---|---|---|
-| `opm.agents.retrieval` — `ovos-wolfram-alpha-solver` | `WolframAlphaRetrievalEngine` | Retrieval — returns `(answer, score)` tuples |
+| `opm.agents.retrieval` — `ovos-wolfram-alpha-solver` | `WolframAlphaRetrievalEngine` | RAG — returns `(answer, score)` tuples |
 | `opm.agents.toolbox` — `ovos-wolfram-alpha-tools` | `WolframAlphaToolbox` | Agent tool use — exposes `search_wolfram_alpha` |
-| `opm.plugin.persona` — `Wolfram Alpha` | `WOLFRAMALPHA_PERSONA` | Ready-made persona using the retrieval engine |
 
 ---
 
 ## Retrieval Engine
 
-`WolframAlphaRetrievalEngine` implements the `RetrievalEngine` OPM interface. It calls the Wolfram Alpha spoken-answer API and translates non-English queries transparently.
-
-Wolfram Alpha excels at: unit conversions, scientific constants, maths, statistics, chemical properties, astronomy, nutrition, historical dates, and any factual question with a definite answer.
+`WolframAlphaRetrievalEngine` implements the `RetrievalEngine` OPM interface. It calls the Wolfram Alpha spoken-answer endpoint and handles non-English queries by translating them to English before the request and back after.
 
 ```python
 from ovos_wolfram_alpha_plugin import WolframAlphaRetrievalEngine
@@ -41,36 +40,56 @@ engine = WolframAlphaRetrievalEngine(config={"appid": "YOUR-KEY"})
 
 # Maths & conversions
 engine.get_spoken_answer("integral of x^2 sin(x)", lang="en")
+# "x^2 (-cos(x)) + 2 x sin(x) + 2 cos(x) + constant"
+
 engine.get_spoken_answer("100 miles in kilometers", lang="en")
+# "160.934 kilometers"
+
 engine.get_spoken_answer("1000 USD in EUR", lang="en")
+# "approximately 923 euros"  (live rate)
 
 # Science & constants
 engine.get_spoken_answer("speed of light", lang="en")
+# "about 2.998 × 10^8 meters per second"
+
 engine.get_spoken_answer("boiling point of ethanol", lang="en")
+# "78.37 degrees Celsius"
+
 engine.get_spoken_answer("distance from Earth to Mars", lang="en")
+# "currently about 1.69 AU"  (live ephemeris)
 
 # Factual lookups
 engine.get_spoken_answer("population of Brazil", lang="en")
+# "approximately 215.3 million people"
+
 engine.get_spoken_answer("calories in 100g of almonds", lang="en")
+# "579 kilocalories"
+
 engine.get_spoken_answer("when was the Eiffel Tower built", lang="en")
+# "construction was from January 28, 1887 to March 31, 1889"
 
-# Non-English (translated automatically)
+# Non-English — translated automatically
 engine.get_spoken_answer("massa do Sol", lang="pt")
+# "aproximadamente 1,989 × 10^30 kg"
 
-# Image result (returns local file path to a Wolfram visual)
+# Image result — returns a local file path to a Wolfram visual
 engine.get_image("benzene molecular structure", lang="en")
 
-# Full structured pod results
+# Full structured pod results — list of {"title", "summary"} dicts
 for pod in engine.get_expanded_answer("Neptune", lang="en"):
-    print(pod)
+    print(pod["title"], "—", pod.get("summary", pod.get("img")))
+# "Orbital period — 164.8 years"
+# "Surface gravity — 11.15 m/s²"
+# ...
 
 # RAG interface: List[Tuple[str, float]]  (answer, score)
-passages = engine.query("half-life of carbon-14", lang="en")
+results = engine.query("half-life of carbon-14", lang="en")
+# [("5730 years", 0.9)]
 ```
 
 ### Translation
 
-Non-English queries are translated to English before being sent to Wolfram Alpha, and answers are translated back. The translation plugin is loaded from OPM:
+Non-English queries require a translation plugin. Configure it by passing `translate_plugin` in the config:
 
 ```python
 engine = WolframAlphaRetrievalEngine(config={
@@ -79,15 +98,17 @@ engine = WolframAlphaRetrievalEngine(config={
 })
 ```
 
+If no translation plugin is available, only English queries are answered.
+
 ---
 
 ## Agent Toolbox
 
-`WolframAlphaToolbox` exposes a `search_wolfram_alpha` tool that any OPM-compatible agent loop (e.g. [ovos-agentic-loop](https://github.com/OpenVoiceOS/ovos-agentic-loop)) can discover and call.
+`WolframAlphaToolbox` exposes a single `search_wolfram_alpha` tool that any OPM-compatible agent loop (e.g. [ovos-agentic-loop](https://github.com/OpenVoiceOS/ovos-agentic-loop)) can discover and call. The tool uses the LLM-optimised Wolfram endpoint, which returns a more structured answer than the spoken endpoint.
 
 ### Persona JSON
 
-Wire the toolbox into a ReAct agent persona with a dedicated Wolfram system prompt passed to the brain:
+Reference the toolbox by its entry point name inside any agentic persona. Pass a `system_prompt` to the brain plugin so the LLM knows how to query Wolfram correctly:
 
 ```json
 {
@@ -98,13 +119,13 @@ Wire the toolbox into a ReAct agent persona with a dedicated Wolfram system prom
     "toolboxes": ["ovos-wolfram-alpha-tools"],
     "ovos-chat-openai-plugin": {
       "api_url": "http://localhost:11434/v1/chat/completions",
-      "system_prompt": "WolframAlpha understands natural language queries about chemistry, physics, geography, history, art, astronomy, and more, and performs mathematical calculations, date and unit conversions, formula solving, etc. Convert inputs to simplified keyword queries whenever possible (e.g. 'France population' not 'how many people live in France'). Send queries in English only; translate non-English queries before sending, then respond in the original language. ALWAYS use this exponent notation: 6*10^14, NEVER 6e14. Never mention your knowledge cutoff date; Wolfram may return more recent data. If a WolframAlpha result is not relevant, re-send the same input with a relevant assumption parameter rather than rephrasing the query."
+      "system_prompt": "You have access to Wolfram Alpha. Use it for maths, science, unit conversions, and factual questions with a definite answer. Always send queries in English as concise keywords (e.g. 'France population', not 'how many people live in France'). Use the exponent notation 6*10^14, never 6e14. If the result is not relevant, retry with a more specific query rather than rephrasing."
     }
   }
 }
 ```
 
-> 💡 Nice tips for a good `"system_prompt"` in the [official docs](https://products.wolframalpha.com/llm-api/documentation)
+> 💡 The [official LLM API docs](https://products.wolframalpha.com/llm-api/documentation) have more tips on writing effective Wolfram system prompts.
 
 ### Direct usage
 
