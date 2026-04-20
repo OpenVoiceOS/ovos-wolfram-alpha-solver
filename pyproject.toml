@@ -29,9 +29,6 @@ Homepage = "https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin"
 [project.entry-points."opm.agents.toolbox"]
 "ovos-wolfram-alpha-tools" = "ovos_wolfram_alpha_plugin:WolframAlphaToolbox"
 
-[project.entry-points."opm.plugin.persona"]
-"Wolfram Alpha" = "ovos_wolfram_alpha_plugin:WOLFRAMALPHA_PERSONA"
-
 [tool.setuptools.dynamic]
 version = {attr = "ovos_wolfram_alpha_plugin.version.__version__"}
 

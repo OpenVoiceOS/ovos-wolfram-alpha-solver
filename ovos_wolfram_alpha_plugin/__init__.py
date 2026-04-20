@@ -357,14 +357,6 @@ class WolframAlphaToolbox(ToolBox):
         ]
 
 
-WOLFRAMALPHA_PERSONA = {
-    "name": "Wolfram Alpha",
-    "solvers": [
-        "ovos-wolfram-alpha-plugin",
-        "ovos-solver-failure-plugin"
-    ]
-}
-
 if __name__ == "__main__":
     s = WolframAlphaRetrievalEngine()
     print(s.api.spoken("Who is the author of The Fault in our Stars"))

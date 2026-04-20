@@ -12,7 +12,6 @@ from ovos_wolfram_alpha_plugin import (
     WolframAlphaToolbox,
     SearchWolframAlphaArgs,
     SearchWolframAlphaOutput,
-    WOLFRAMALPHA_PERSONA,
 )
 
 
@@ -180,19 +179,6 @@ class TestWolframAlphaToolbox(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# Persona
-# ---------------------------------------------------------------------------
-
-class TestPersona(unittest.TestCase):
-
-    def test_persona_has_name(self):
-        self.assertEqual(WOLFRAMALPHA_PERSONA["name"], "Wolfram Alpha")
-
-    def test_persona_has_solvers(self):
-        self.assertIn("ovos-wolfram-alpha-solver", WOLFRAMALPHA_PERSONA["solvers"])
-
-
-# ---------------------------------------------------------------------------
 # Plugin loading
 # ---------------------------------------------------------------------------
 
@@ -203,7 +189,6 @@ class TestPluginLoading(unittest.TestCase):
             WolframAlphaApi,
             WolframAlphaRetrievalEngine,
             WolframAlphaToolbox,
-            WOLFRAMALPHA_PERSONA,
         )
 
 
