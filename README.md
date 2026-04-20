@@ -4,7 +4,9 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 [![Python](https://img.shields.io/badge/python-%3E%3D3.10-blue)](https://www.python.org/)
 
-[Wolfram Alpha](https://www.wolframalpha.com/) plugin for [OpenVoiceOS](https://openvoiceos.org). Provides a retrieval engine and agent toolbox built on the Wolfram Alpha API.
+Wolfram Alpha integration for [OpenVoiceOS](https://openvoiceos.org). Provides a **retrieval engine** for RAG pipelines and an **agent toolbox** for tool-using agents, both as standard OPM plugins.
+
+An [API key](https://products.wolframalpha.com/api/) is required. A demo key is bundled for development but is rate-limited and should not be used in production.
 
 ---
 
@@ -14,132 +16,93 @@
 pip install ovos-wolfram-alpha-plugin
 ```
 
-An [API key](https://products.wolframalpha.com/api/) is required. A demo key is bundled for development but is rate-limited and should not be used in production.
+---
+
+## OPM Entry Points
+
+| Entry point | Class | Use case |
+|---|---|---|
+| `opm.agents.retrieval` — `ovos-wolfram-alpha-solver` | `WolframAlphaRetrievalEngine` | Retrieval — returns `(answer, score)` tuples |
+| `opm.agents.toolbox` — `ovos-wolfram-alpha-tools` | `WolframAlphaToolbox` | Agent tool use — exposes `search_wolfram_alpha` |
+| `opm.plugin.persona` — `Wolfram Alpha` | `WOLFRAMALPHA_PERSONA` | Ready-made persona using the retrieval engine |
 
 ---
 
-## Configuration
+## Retrieval Engine
 
-Add to `~/.config/mycroft/mycroft.conf`:
-
-```json
-{
-  "ovos-wolfram-alpha-plugin": {
-    "appid": "YOUR-WOLFRAM-API-KEY",
-    "units": "metric"
-  }
-}
-```
-
-### Translation
-
-Non-English queries are translated to English before being sent to Wolfram Alpha, and the answer is translated back. Configure the translation plugin:
-
-```json
-{
-  "language": {
-    "translation_module": "ovos-translate-plugin-server"
-  }
-}
-```
-
----
-
-## OPM plugins
-
-### Retrieval engine (`opm.agents.retrieval`)
-
-`WolframAlphaRetrievalEngine` implements the `RetrievalEngine` interface for use in OVOS agent pipelines.
-
-```python
-from ovos_wolfram_alpha_plugin import WolframAlphaRetrievalEngine
-
-engine = WolframAlphaRetrievalEngine(config={"appid": "YOUR-KEY"})
-results = engine.query("speed of light", lang="en")
-# [("The speed of light has a value of about 3×10^8 m/s", 0.9)]
-```
-
-### Agent toolbox (`opm.agents.toolbox`)
-
-`WolframAlphaToolbox` exposes a `search_wolfram_alpha` tool for LLM agent frameworks.
-
-```python
-from ovos_wolfram_alpha_plugin import WolframAlphaToolbox
-
-toolbox = WolframAlphaToolbox(config={"appid": "YOUR-KEY"})
-tools = toolbox.discover_tools()
-```
-
-### Persona (`opm.plugin.persona`)
-
-A `WOLFRAMALPHA_PERSONA` persona config is registered under the key `Wolfram Alpha`.
-
----
-
-## Direct API usage
+`WolframAlphaRetrievalEngine` implements the `RetrievalEngine` OPM interface. It calls the Wolfram Alpha spoken-answer API and translates non-English queries transparently.
 
 ```python
 from ovos_wolfram_alpha_plugin import WolframAlphaRetrievalEngine
 
 engine = WolframAlphaRetrievalEngine(config={"appid": "YOUR-KEY"})
 
-# Natural language answer
+# RAG interface: List[Tuple[str, float]]  (answer, score)
+passages = engine.query("speed of light", lang="en")
+
+# Spoken answer
 print(engine.get_spoken_answer("venus", lang="en"))
 
-# Image result path
+# Image result (returns local file path)
 print(engine.get_image("mercury", lang="en"))
 
-# Full structured results
+# Full structured pod results
 for pod in engine.get_expanded_answer("elon musk", lang="en"):
     print(pod)
 ```
 
+### Translation
+
+Non-English queries are translated to English before being sent to Wolfram Alpha, and answers are translated back. The translation plugin is loaded from OPM:
+
+```python
+engine = WolframAlphaRetrievalEngine(config={
+    "appid": "YOUR-KEY",
+    "translate_plugin": "ovos-translate-plugin-server",
+})
+```
+
 ---
 
-## Agentic loop integration
+## Agent Toolbox
 
-Use this plugin with [ovos-agentic-loop](https://github.com/OpenVoiceOS/ovos-agentic-loop) to build a Wolfram Alpha persona that reasons with tools before answering.
+`WolframAlphaToolbox` exposes a `search_wolfram_alpha` tool that any OPM-compatible agent loop (e.g. [ovos-agentic-loop](https://github.com/OpenVoiceOS/ovos-agentic-loop)) can discover and call.
 
-### Persona JSON
-
-The `WOLFRAMALPHA_PERSONA` registered by this plugin (`opm.plugin.persona` → `Wolfram Alpha`) uses `ovos-wolfram-alpha-solver` as a plain retrieval solver. For a full agentic persona that can use the toolbox and apply the Wolfram usage guidelines as a system prompt, define a custom persona JSON:
+### Loading via persona JSON (recommended)
 
 ```json
 {
   "name": "Wolfram Alpha",
-  "solvers": ["ovos-react-loop"],
+  "solvers": [
+    "ovos-react-loop"
+  ],
   "ovos-react-loop": {
     "brain": "ovos-chat-openai-plugin",
     "ovos-chat-openai-plugin": {
       "api_url": "http://localhost:11434/v1/chat/completions"
     },
-    "toolboxes": ["ovos-wolfram-alpha-tools"],
-    "system_prompt": "You are a Wolfram Alpha assistant. Use the search_wolfram_alpha tool to answer factual, mathematical, and scientific questions. Always send queries to Wolfram in English as concise keywords. Translate answers back to the user's language.",
-    "max_iterations": 5
+    "toolboxes": [
+      "ovos-wolfram-alpha-tools"
+    ]
   }
 }
 ```
 
-### Using `WOLFRAMALPHA_PROMPT` as the system prompt
-
-`WolframAlphaToolbox.WOLFRAMALPHA_PROMPT` contains detailed Wolfram usage guidelines (query formatting, unit notation, assumption handling). Pass it directly as the system prompt for best results:
+### Direct usage
 
 ```python
-from ovos_agentic_loop.react import ReActLoopEngine
-from ovos_wolfram_alpha_plugin import WolframAlphaToolbox
+from ovos_wolfram_alpha_plugin import WolframAlphaToolbox, SearchWolframAlphaArgs
 
-toolbox = WolframAlphaToolbox(config={"appid": "YOUR-KEY"})
+tb = WolframAlphaToolbox(config={"appid": "YOUR-KEY"})
 
-engine = ReActLoopEngine({
-    "brain": "ovos-chat-openai-plugin",
-    "ovos-chat-openai-plugin": {
-        "api_url": "http://localhost:11434/v1/chat/completions"
-    },
-    "system_prompt": WolframAlphaToolbox.WOLFRAMALPHA_PROMPT,
-    "max_iterations": 5,
-})
-engine.load_toolboxes([toolbox])
+tools = tb.discover_tools()
+# [AgentTool(name="search_wolfram_alpha", ...)]
+
+output = tb.search_wolfram(SearchWolframAlphaArgs(query="France population", units="metric"))
+print(output.result)
 ```
+
+`WolframAlphaToolbox.WOLFRAMALPHA_PROMPT` contains detailed Wolfram usage guidelines (query formatting, unit notation, assumption handling) intended to be embedded in the agent loop's system prompt by the persona or skill that wires everything together.
 
 ---
 
