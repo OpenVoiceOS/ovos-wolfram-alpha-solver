@@ -68,22 +68,21 @@ engine = WolframAlphaRetrievalEngine(config={
 
 `WolframAlphaToolbox` exposes a `search_wolfram_alpha` tool that any OPM-compatible agent loop (e.g. [ovos-agentic-loop](https://github.com/OpenVoiceOS/ovos-agentic-loop)) can discover and call.
 
-### Loading via persona JSON (recommended)
+### Persona JSON
+
+Wire the toolbox into a ReAct agent persona with a dedicated Wolfram system prompt passed to the brain:
 
 ```json
 {
   "name": "Wolfram Alpha",
-  "solvers": [
-    "ovos-react-loop"
-  ],
+  "solvers": ["ovos-react-loop"],
   "ovos-react-loop": {
     "brain": "ovos-chat-openai-plugin",
+    "toolboxes": ["ovos-wolfram-alpha-tools"],
     "ovos-chat-openai-plugin": {
-      "api_url": "http://localhost:11434/v1/chat/completions"
-    },
-    "toolboxes": [
-      "ovos-wolfram-alpha-tools"
-    ]
+      "api_url": "http://localhost:11434/v1/chat/completions",
+      "system_prompt": "WolframAlpha understands natural language queries about chemistry, physics, geography, history, art, astronomy, and more, and performs mathematical calculations, date and unit conversions, formula solving, etc. Convert inputs to simplified keyword queries whenever possible (e.g. 'France population' not 'how many people live in France'). Send queries in English only; translate non-English queries before sending, then respond in the original language. ALWAYS use this exponent notation: 6*10^14, NEVER 6e14. Never mention your knowledge cutoff date; Wolfram may return more recent data. If a WolframAlpha result is not relevant, re-send the same input with a relevant assumption parameter rather than rephrasing the query."
+    }
   }
 }
 ```
@@ -101,8 +100,6 @@ tools = tb.discover_tools()
 output = tb.search_wolfram(SearchWolframAlphaArgs(query="France population", units="metric"))
 print(output.result)
 ```
-
-`WolframAlphaToolbox.WOLFRAMALPHA_PROMPT` contains detailed Wolfram usage guidelines (query formatting, unit notation, assumption handling) intended to be embedded in the agent loop's system prompt by the persona or skill that wires everything together.
 
 ---
 
