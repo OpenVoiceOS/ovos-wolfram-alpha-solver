@@ -87,6 +87,8 @@ Wire the toolbox into a ReAct agent persona with a dedicated Wolfram system prom
 }
 ```
 
+> 💡 Nice tips for a good `"system_prompt"` in the [official docs](https://products.wolframalpha.com/llm-api/documentation)
+
 ### Direct usage
 
 ```python
