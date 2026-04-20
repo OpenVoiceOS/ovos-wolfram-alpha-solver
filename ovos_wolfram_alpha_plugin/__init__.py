@@ -71,6 +71,7 @@ class WolframAlphaApi:
                   **optional_params}
         url = 'https://www.wolframalpha.com/queryrecognizer/query.jsp'
         # TODO - {"status":401,"message":"Not permitted"}
+        # what am i doin wrong? https://products.wolframalpha.com/query-recognizer/documentation
         return requests.get(url, params=params).json()
 
     def llm(self, query, units="metric", lat_lon=None, optional_params=None):
@@ -157,6 +158,7 @@ class WolframAlphaRetrievalEngine(RetrievalEngine):
         units = self.config.get("units") or Configuration().get("system_unit", "metric")
         answer = self.get_spoken_answer(query, lang, units)
         if answer:
+            # TODO - use query recognizer to get a confidence level
             return [(answer, 0.9)]
         return []
 
