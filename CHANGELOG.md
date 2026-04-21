@@ -1,28 +1,36 @@
 # Changelog
 
-## [1.0.0a1](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/tree/1.0.0a1) (2026-04-20)
+## [1.0.0a2](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/tree/1.0.0a2) (2026-04-21)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/compare/0.0.5a2...1.0.0a1)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/compare/1.0.0a1...1.0.0a2)
+
+**Merged pull requests:**
+
+- Update ovos-config dependency version range [\#22](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/pull/22) ([JarbasAl](https://github.com/JarbasAl))
+
+## [1.0.0a1](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/tree/1.0.0a1) (2026-04-20)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/compare/0.0.5a2...1.0.0a1)
 
 **Breaking changes:**
 
-- feat!: add toolbox, add llm api, add CI workflows, tests and README [\#19](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/pull/19) ([JarbasAl](https://github.com/JarbasAl))
+- feat!: add toolbox, add llm api, add CI workflows, tests and README [\#19](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/pull/19) ([JarbasAl](https://github.com/JarbasAl))
 
-## [0.0.5a2](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/tree/0.0.5a2) (2025-12-19)
+## [0.0.5a2](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/tree/0.0.5a2) (2025-12-19)
 
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/compare/0.0.5a1...0.0.5a2)
-
-**Merged pull requests:**
-
-- chore\(deps\): update dependency python to 3.14 [\#8](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/pull/8) ([renovate[bot]](https://github.com/apps/renovate))
-
-## [0.0.5a1](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/tree/0.0.5a1) (2025-12-18)
-
-[Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/compare/0.0.4...0.0.5a1)
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/compare/0.0.5a1...0.0.5a2)
 
 **Merged pull requests:**
 
-- chore: Configure Renovate [\#7](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-solver/pull/7) ([renovate[bot]](https://github.com/apps/renovate))
+- chore\(deps\): update dependency python to 3.14 [\#8](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/pull/8) ([renovate[bot]](https://github.com/apps/renovate))
+
+## [0.0.5a1](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/tree/0.0.5a1) (2025-12-18)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/compare/0.0.4...0.0.5a1)
+
+**Merged pull requests:**
+
+- chore: Configure Renovate [\#7](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/pull/7) ([renovate[bot]](https://github.com/apps/renovate))
 
 
 
