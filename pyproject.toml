@@ -20,6 +20,14 @@ dependencies = [
     "pydantic>=2.0.0,<3.0.0"
 ]
 
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "ovoscope",
+    "ovos-persona",
+    "ovos-padacioso",
+]
+
 [project.urls]
 Homepage = "https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin"
 
