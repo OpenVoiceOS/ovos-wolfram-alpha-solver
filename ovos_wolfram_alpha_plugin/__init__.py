@@ -169,7 +169,8 @@ class WolframAlphaRetrievalEngine(RetrievalEngine):
                   lang: Optional[str] = None,
                   units: Optional[str] = None):
         """Return path to a cached image result for the query."""
-        if lang != "en":
+        lang = (lang or "en-US").split("-")[0].lower()
+        if lang != "en" and self.translator:
             query = self.translator.translate(query, target="en", source=lang)
         units = units or Configuration().get("system_unit", "metric")
         return self.api.get_image(query, units=units)
@@ -178,8 +179,8 @@ class WolframAlphaRetrievalEngine(RetrievalEngine):
                           lang: Optional[str] = None,
                           units: Optional[str] = None):
         """Return a single natural-language sentence answering the query."""
-        lang = lang.split("-")[0].lower()
-        if lang != "en":
+        lang = (lang or "en-US").split("-")[0].lower()
+        if lang != "en" and self.translator:
             query = self.translator.translate(query, target="en", source=lang)
         units = units or Configuration().get("system_unit", "metric")
         answer = self.api.spoken(query, units=units)
@@ -187,7 +188,7 @@ class WolframAlphaRetrievalEngine(RetrievalEngine):
                        "wolfram alpha did not understand your input"]
         if answer.lower().strip() in bad_answers:
             return None
-        if lang != "en":
+        if lang != "en" and self.translator:
             answer = self.translator.translate(answer, target=lang, source="en")
         return answer
 
@@ -195,7 +196,8 @@ class WolframAlphaRetrievalEngine(RetrievalEngine):
                             lang: Optional[str] = None,
                             units: Optional[str] = None):
         """Return a list of structured result pods from the Full Results API."""
-        if lang != "en":
+        lang = (lang or "en-US").split("-")[0].lower()
+        if lang != "en" and self.translator:
             query = self.translator.translate(query, target="en", source=lang)
         data = self.api.full_results(query, units=units)
         skip = ['Input interpretation', 'Interpretation',
