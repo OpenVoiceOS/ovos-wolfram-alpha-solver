@@ -128,7 +128,46 @@ class WolframAlphaRetrievalEngine(RetrievalEngine):
     def __init__(self, config=None, translator: Optional[LanguageTranslator] = None):
         super().__init__(config=config)
         self.api = WolframAlphaApi(key=self.config.get("appid") or "Y7R353-9HQAAL8KKA")
+        # Wolfram Alpha answers only in English. Translation (to serve other
+        # languages) is OPT-IN via ``enable_tx`` (default OFF) — see the README;
+        # a remote translate plugin is recommended when enabling it. When on, the
+        # plugin loads LAZILY and gracefully (a missing translate plugin never
+        # breaks load/querying, it just falls back to English).
+        self.translate: bool = self.config.get("enable_tx", False)
         self.translator: Optional[LanguageTranslator] = translator
+        self._translator_loaded: bool = translator is not None
+
+    def _get_translator(self) -> Optional[LanguageTranslator]:
+        """Return the translation plugin, loading it lazily once, or None.
+
+        An explicitly provided translator is always used. Otherwise translation
+        must be opted into (``enable_tx``); the plugin is then loaded lazily, and
+        a remote service is recommended since translation plugins are instantiated
+        repeatedly by many components. Returns None when translation is disabled or
+        no plugin can be loaded; the engine then answers in English rather than raising.
+        """
+        if self.translator is not None:
+            return self.translator  # explicitly injected / already loaded
+        if not self.translate:
+            return None
+        if not self._translator_loaded:
+            self._translator_loaded = True
+            try:
+                from ovos_plugin_manager.language import load_tx_plugin
+                lang_cfg = Configuration().get("language", {})
+                plug = (self.config.get("translate_plugin")
+                        or lang_cfg.get("translation_module")
+                        or "ovos-translate-plugin-server")  # remote by default
+                clazz = load_tx_plugin(plug)
+                if clazz is not None:
+                    self.translator = clazz(config=lang_cfg.get(plug, {}))
+                else:
+                    LOG.warning(f"translate plugin '{plug}' unavailable; "
+                                f"Wolfram Alpha will answer in English only")
+            except Exception as e:
+                LOG.warning(f"could not load translate plugin ({e}); "
+                            f"Wolfram Alpha will answer in English only")
+        return self.translator
 
     def query(self, query: str, lang: Optional[str] = None, k: int = 3) -> List[Tuple[str, float]]:
         """
@@ -157,8 +196,9 @@ class WolframAlphaRetrievalEngine(RetrievalEngine):
                   units: Optional[str] = None):
         """Return path to a cached image result for the query."""
         lang = (lang or "en-US").split("-")[0].lower()
-        if lang != "en" and self.translator:
-            query = self.translator.translate(query, target="en", source=lang)
+        tx = self._get_translator() if lang != "en" else None
+        if tx:
+            query = tx.translate(query, target="en", source=lang)
         units = units or Configuration().get("system_unit", "metric")
         return self.api.get_image(query, units=units)
 
@@ -167,16 +207,17 @@ class WolframAlphaRetrievalEngine(RetrievalEngine):
                           units: Optional[str] = None):
         """Return a single natural-language sentence answering the query."""
         lang = (lang or "en-US").split("-")[0].lower()
-        if lang != "en" and self.translator:
-            query = self.translator.translate(query, target="en", source=lang)
+        tx = self._get_translator() if lang != "en" else None
+        if tx:
+            query = tx.translate(query, target="en", source=lang)
         units = units or Configuration().get("system_unit", "metric")
         answer = self.api.spoken(query, units=units)
         bad_answers = ["no spoken result available",
                        "wolfram alpha did not understand your input"]
         if answer.lower().strip() in bad_answers:
             return None
-        if lang != "en" and self.translator:
-            answer = self.translator.translate(answer, target=lang, source="en")
+        if lang != "en" and tx:
+            answer = tx.translate(answer, target=lang, source="en")
         return answer
 
     def get_expanded_answer(self, query,
@@ -184,8 +225,9 @@ class WolframAlphaRetrievalEngine(RetrievalEngine):
                             units: Optional[str] = None):
         """Return a list of structured result pods from the Full Results API."""
         lang = (lang or "en-US").split("-")[0].lower()
-        if lang != "en" and self.translator:
-            query = self.translator.translate(query, target="en", source=lang)
+        tx = self._get_translator() if lang != "en" else None
+        if tx:
+            query = tx.translate(query, target="en", source=lang)
         data = self.api.full_results(query, units=units)
         skip = ['Input interpretation', 'Interpretation',
                 'Result', 'Value', 'Image']
@@ -230,9 +272,9 @@ class WolframAlphaRetrievalEngine(RetrievalEngine):
                 steps[idx]["summary"] = self.make_speakable(steps[idx]["summary"])
 
             if lang != "en":
-                steps[idx]["title"] = self.translator.translate(steps[idx]["title"], target=lang, source="en")
+                steps[idx]["title"] = tx.translate(steps[idx]["title"], target=lang, source="en")
                 if step.get("summary"):
-                    steps[idx]["summary"] = self.translator.translate(steps[idx]["summary"], target=lang, source="en")
+                    steps[idx]["summary"] = tx.translate(steps[idx]["summary"], target=lang, source="en")
 
             prev = step["title"]
         return [s for s in steps if s]
