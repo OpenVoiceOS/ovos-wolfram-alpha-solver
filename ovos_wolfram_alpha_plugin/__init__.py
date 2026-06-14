@@ -21,7 +21,6 @@ from ovos_plugin_manager.templates.agents import RetrievalEngine
 from ovos_utils.text_utils import rm_parentheses
 from pydantic import Field
 from ovos_utils.log import LOG
-from ovos_plugin_manager.language import load_tx_plugin
 
 
 class WolframAlphaApi:
@@ -130,18 +129,6 @@ class WolframAlphaRetrievalEngine(RetrievalEngine):
         super().__init__(config=config)
         self.api = WolframAlphaApi(key=self.config.get("appid") or "Y7R353-9HQAAL8KKA")
         self.translator: Optional[LanguageTranslator] = translator
-        if not translator:
-            self._load_translator()
-
-    def _load_translator(self):
-        lang_cfg = Configuration().get("language", {})
-        plug_id = self.config.get("translate_plugin") or lang_cfg.get("translation_module", "ovos-translate-plugin-server")
-        clazz = load_tx_plugin(plug_id)
-        if clazz is None:
-            LOG.error(f"Translation plugin not loaded '{plug_id}': only english queries will be answered")
-        else:
-            self.translator = clazz(config=lang_cfg.get(plug_id, {}))
-            LOG.debug(f"Loaded translation plugin: '{plug_id}'")
 
     def query(self, query: str, lang: Optional[str] = None, k: int = 3) -> List[Tuple[str, float]]:
         """
