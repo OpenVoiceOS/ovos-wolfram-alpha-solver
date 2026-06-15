@@ -12,9 +12,13 @@ authors = [
     {name = "JarbasAi", email = "jarbasai@mailfence.com"}
 ]
 keywords = ["ovos", "plugin", "wolfram"]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+]
 dependencies = [
     "ovos-utils>=0.7.0,<1.0.0",
-    "ovos-plugin-manager>=2.3.0a1,<3.0.0",
+    "ovos-plugin-manager>=2.6.1a1,<3.0.0",
     "ovos-config>=0.0.12,<3.0.0",
     "requests>=2.0.0",
     "pydantic>=2.0.0,<3.0.0"
@@ -24,7 +28,7 @@ dependencies = [
 test = [
     "pytest",
     "ovoscope",
-    "ovos-persona>=0.9.0a1",
+    "ovos-persona>=0.9.0a3",
     "padacioso",
 ]
 
