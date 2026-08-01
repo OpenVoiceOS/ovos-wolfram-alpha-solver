@@ -6,7 +6,7 @@
 
 [Wolfram Alpha](https://www.wolframalpha.com/) integration for [OpenVoiceOS](https://openvoiceos.org). Provides a **retrieval engine** for RAG pipelines and an **agent toolbox** for tool-using agents, both as standard OPM plugins.
 
-Wolfram Alpha excels at questions with a single definitive answer: maths, unit conversions, scientific constants, chemical properties, astronomy, nutrition, geography, and historical dates. It is not a search engine — it computes answers from curated data.
+Wolfram Alpha excels at questions with a single definitive answer: maths, unit conversions, scientific constants, chemical properties, astronomy, nutrition, geography, and historical dates. It is not a search engine. It computes answers from curated data.
 
 An [API key](https://products.wolframalpha.com/api/) is required. A demo key is bundled for development but is rate-limited and should not be used in production.
 
@@ -24,8 +24,8 @@ pip install ovos-wolfram-alpha-plugin
 
 | Entry point | Class | Use case |
 |---|---|---|
-| `opm.agents.retrieval` — `ovos-wolfram-alpha-solver` | `WolframAlphaRetrievalEngine` | RAG — returns `(answer, score)` tuples |
-| `opm.agents.toolbox` — `ovos-wolfram-alpha-tools` | `WolframAlphaToolbox` | Agent tool use — exposes `search_wolfram_alpha` |
+| `opm.agents.retrieval`, `ovos-wolfram-alpha-plugin` | `WolframAlphaRetrievalEngine` | RAG, returns `(answer, score)` tuples |
+| `opm.agents.toolbox`, `ovos-wolfram-alpha-tools` | `WolframAlphaToolbox` | Agent tool use, exposes `search_wolfram_alpha` |
 
 ---
 
@@ -68,18 +68,18 @@ engine.get_spoken_answer("calories in 100g of almonds", lang="en")
 engine.get_spoken_answer("when was the Eiffel Tower built", lang="en")
 # "construction was from January 28, 1887 to March 31, 1889"
 
-# Non-English — translated automatically
+# Non-English, translated automatically
 engine.get_spoken_answer("massa do Sol", lang="pt")
 # "aproximadamente 1,989 × 10^30 kg"
 
-# Image result — returns a local file path to a Wolfram visual
+# Image result, returns a local file path to a Wolfram visual
 engine.get_image("benzene molecular structure", lang="en")
 
-# Full structured pod results — list of {"title", "summary"} dicts
+# Full structured pod results, list of {"title", "summary"} dicts
 for pod in engine.get_expanded_answer("Neptune", lang="en"):
-    print(pod["title"], "—", pod.get("summary", pod.get("img")))
-# "Orbital period — 164.8 years"
-# "Surface gravity — 11.15 m/s²"
+    print(pod["title"], "-", pod.get("summary", pod.get("img")))
+# "Orbital period - 164.8 years"
+# "Surface gravity - 11.15 m/s²"
 # ...
 
 # RAG interface: List[Tuple[str, float]]  (answer, score)
@@ -125,7 +125,7 @@ Reference the toolbox by its entry point name inside any agentic persona. Pass a
 }
 ```
 
-> 💡 The [official LLM API docs](https://products.wolframalpha.com/llm-api/documentation) have more tips on writing effective Wolfram system prompts.
+> See the [official LLM API docs](https://products.wolframalpha.com/llm-api/documentation) for more tips on writing effective Wolfram system prompts.
 
 ### Direct usage
 
@@ -143,6 +143,13 @@ print(output.result)
 
 ---
 
+## Related projects
+
+- [OpenVoiceOS/ovos-skill-wolfie](https://github.com/OpenVoiceOS/ovos-skill-wolfie) — a voice skill that wires `WolframAlphaRetrievalEngine` into the OVOS intent, Common Query, and fallback pipelines.
+- [OpenVoiceOS/ovos-agentic-loop](https://github.com/OpenVoiceOS/ovos-agentic-loop) — an agent loop that can discover and call the `WolframAlphaToolbox` tool.
+
+---
+
 ## License
 
-Apache 2.0 — see [LICENSE](LICENSE).
+Apache 2.0. See [LICENSE](LICENSE).
