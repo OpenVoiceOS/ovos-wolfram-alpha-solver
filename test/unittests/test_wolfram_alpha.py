@@ -13,6 +13,7 @@ from ovos_wolfram_alpha_plugin import (
     SearchWolframAlphaArgs,
     SearchWolframAlphaOutput,
 )
+from ovos_plugin_manager.templates.agents import RetrievalEngine
 
 
 # ---------------------------------------------------------------------------
@@ -79,9 +80,22 @@ class TestWolframAlphaApi(unittest.TestCase):
 class TestWolframAlphaRetrievalEngine(unittest.TestCase):
 
     def _make_engine(self):
-        with patch("ovos_wolfram_alpha_plugin.load_tx_plugin", return_value=None), \
-             patch("ovos_wolfram_alpha_plugin.Configuration", return_value={}):
+        with patch("ovos_wolfram_alpha_plugin.Configuration", return_value={}):
             return WolframAlphaRetrievalEngine(config={"appid": "TEST"})
+
+    def test_inherits_retrieval_engine(self):
+        engine = self._make_engine()
+        self.assertIsInstance(engine, RetrievalEngine)
+
+    def test_no_auto_translator(self):
+        engine = self._make_engine()
+        self.assertIsNone(engine.translator)
+
+    def test_explicit_translator_accepted(self):
+        mock_tx = MagicMock()
+        with patch("ovos_wolfram_alpha_plugin.Configuration", return_value={}):
+            engine = WolframAlphaRetrievalEngine(config={"appid": "TEST"}, translator=mock_tx)
+        self.assertIs(engine.translator, mock_tx)
 
     def test_query_returns_answer_and_score(self):
         engine = self._make_engine()
@@ -190,6 +204,10 @@ class TestPluginLoading(unittest.TestCase):
             WolframAlphaRetrievalEngine,
             WolframAlphaToolbox,
         )
+
+    def test_entry_point_class_is_retrieval_engine(self):
+        from ovos_plugin_manager.templates.agents import RetrievalEngine
+        self.assertTrue(issubclass(WolframAlphaRetrievalEngine, RetrievalEngine))
 
 
 if __name__ == "__main__":

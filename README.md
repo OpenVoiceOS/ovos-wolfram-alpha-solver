@@ -89,16 +89,24 @@ results = engine.query("half-life of carbon-14", lang="en")
 
 ### Translation
 
-Non-English queries require a translation plugin. Configure it by passing `translate_plugin` in the config:
+Wolfram Alpha answers **only in English**. Translation of non-English queries is
+**disabled by default** — enable it explicitly with `enable_tx`:
 
 ```python
 engine = WolframAlphaRetrievalEngine(config={
     "appid": "YOUR-KEY",
+    "enable_tx": True,
     "translate_plugin": "ovos-translate-plugin-server",
 })
 ```
 
-If no translation plugin is available, only English queries are answered.
+> **Recommended: use a remote translation service** (e.g. `ovos-translate-plugin-server`).
+> Unlike STT/TTS plugins (loaded once into a fixed slot), translation plugins are
+> instantiated repeatedly by many components — a local translation model would be
+> spun up over and over, so a remote service is strongly preferred.
+
+When enabled, the translate plugin is loaded lazily and degrades gracefully: if it
+cannot be loaded, only English queries are answered (it never breaks the engine).
 
 ---
 
