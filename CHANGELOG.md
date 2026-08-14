@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0a1](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/tree/1.1.0a1) (2026-08-14)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/compare/1.0.0a3...1.1.0a1)
+
+**Merged pull requests:**
+
+- feat: publish a docker image for a ready-to-run WolframBot persona [\#27](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/pull/27) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [1.0.0a3](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/tree/1.0.0a3) (2026-08-01)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/compare/1.0.0a2...1.0.0a3)
