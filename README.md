@@ -150,6 +150,61 @@ print(output.result)
 
 ---
 
+## Docker
+
+This repo publishes `ghcr.io/openvoiceos/ovos-wolfram-alpha-plugin`, a
+standalone `ovos-persona-server` that serves one persona, `WolframBot`,
+backed by the `WolframAlphaRetrievalEngine` in this plugin. Every query hits
+`api.wolframalpha.com` and needs an `appid`. If you do not set one, the
+container falls back to the demo `appid` bundled in this plugin, so it works
+with no configuration at all. That demo key is shared by every user of this
+plugin and is rate limited -- fine to try the image out, not fine for real
+traffic. Get your own free `appid` from
+[the Wolfram developer portal](https://developer.wolframalpha.com/) and pass
+it as `WOLFRAM_APPID`:
+
+```bash
+docker run -p 8392:8337 -e WOLFRAM_APPID=your-appid-here \
+    ghcr.io/openvoiceos/ovos-wolfram-alpha-plugin:dev
+```
+
+```bash
+curl http://localhost:8392/v1/models
+curl http://localhost:8392/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{"model": "WolframBot", "messages": [{"role": "user", "content": "distance from earth to the moon"}]}'
+```
+
+Known issue as of `ovos-persona` 0.9.0a9 through 0.9.0a16 (the latest published
+alpha): `Persona.chat` passes `sess.lang` and `sess.system_unit` into
+`chat_completion` in the wrong order, so the retrieval engine receives the
+unit string (`"metric"`) where it expects a language code, and the request
+above answers `500 Internal Server Error` with `Persona chat failed:
+'NoneType' object has no attribute 'split'`. This is a bug in `ovos-persona`
+itself, not in this plugin or this image -- calling
+`WolframAlphaRetrievalEngine().query(...)` directly, with the bundled demo
+key, returns a correct answer. It will clear up once a fixed `ovos-persona`
+is published; there is nothing to configure around it from this image.
+
+A compose snippet:
+
+```yaml
+services:
+  ovos-wolfram-persona:
+    image: ghcr.io/openvoiceos/ovos-wolfram-alpha-plugin:dev
+    ports:
+      - "8392:8337"
+    environment:
+      - WOLFRAM_APPID=your-appid-here
+    restart: unless-stopped
+```
+
+The image builds on every pull request touching `Dockerfile`,
+`entrypoint.sh`, `.dockerignore`, `pyproject.toml`, or the docker workflow
+itself (build only, no push), and publishes on pushes to `master` (`latest`),
+`dev` (`dev`), and version tags. See the
+[`docker` workflow](.github/workflows/docker.yml).
+
 ## License
 
 Apache 2.0. See [LICENSE](LICENSE).
