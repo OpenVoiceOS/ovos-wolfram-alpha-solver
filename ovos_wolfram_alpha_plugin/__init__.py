@@ -316,16 +316,17 @@ class SearchWolframAlphaOutput(ToolOutput):
 class WolframAlphaToolbox(ToolBox):
     toolbox_id = "ovos-wolfram-alpha-tools"
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, config: Optional[Dict[str, Any]] = None, bus: Optional[Any] = None) -> None:
         """
         Initialise the toolbox.
 
         Args:
             config: Plugin configuration dict.
+            bus: The OVOS Messagebus client instance, passed through to ToolBox.
         """
         self.config = config or {}
         self.api = WolframAlphaApi(key=self.config.get("appid") or "Y7R353-9HQAAL8KKA")
-        super().__init__(toolbox_id=self.toolbox_id)
+        super().__init__(toolbox_id=self.toolbox_id, config=config, bus=bus)
 
     def search_wolfram(self, args: SearchWolframAlphaArgs) -> SearchWolframAlphaOutput:
         """Query Wolfram Alpha and return the LLM-optimised answer."""

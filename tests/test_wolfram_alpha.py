@@ -177,6 +177,33 @@ class TestWolframAlphaToolbox(unittest.TestCase):
     def test_toolbox_id(self):
         self.assertEqual(WolframAlphaToolbox.toolbox_id, "ovos-wolfram-alpha-tools")
 
+    def test_constructs_the_way_the_persona_server_loader_does(self):
+        # ovos_persona_server.tools._load_toolboxes calls cls(config=cfg, bus=bus).
+        # A plugin whose __init__ does not accept bus raises a TypeError there
+        # and the loader only logs a warning, so the toolbox silently vanishes.
+        with patch("ovos_wolfram_alpha_plugin.WolframAlphaApi"):
+            cfg = {"appid": "TEST"}
+            tb = WolframAlphaToolbox(config=cfg, bus=None)
+        self.assertEqual(tb.config, cfg)
+        self.assertTrue(tb.tools)
+
+    def test_constructor_forwards_bus_so_bind_actually_runs(self):
+        # Passing bus=None (as the loader does when it has no bus of its own)
+        # must not crash, and passing a real bus must reach ToolBox.bind(),
+        # which is only possible now that __init__ forwards it to super().
+        calls = []
+
+        class FakeBus:
+            def on(self, topic, handler):
+                calls.append(topic)
+
+        with patch("ovos_wolfram_alpha_plugin.WolframAlphaApi"):
+            tb = WolframAlphaToolbox(config={"appid": "TEST"}, bus=FakeBus())
+        self.assertEqual(sorted(calls), sorted([
+            "ovos.persona.tools.discover",
+            f"ovos.persona.tools.{tb.toolbox_id}.call",
+        ]))
+
 
 # ---------------------------------------------------------------------------
 # Plugin loading
