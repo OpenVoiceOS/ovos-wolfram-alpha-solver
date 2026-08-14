@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1a1](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/tree/1.1.1a1) (2026-08-14)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/compare/1.1.0a1...1.1.1a1)
+
+**Merged pull requests:**
+
+- fix: WolframAlphaToolbox constructor rejects the OPM ToolBox loader call [\#30](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/pull/30) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [1.1.0a1](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/tree/1.1.0a1) (2026-08-14)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/compare/1.0.0a3...1.1.0a1)
