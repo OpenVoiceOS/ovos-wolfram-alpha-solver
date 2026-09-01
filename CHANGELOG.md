@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.2a1](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/tree/1.1.2a1) (2026-09-01)
+
+[Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/compare/1.1.1a1...1.1.2a1)
+
+**Merged pull requests:**
+
+- fix: allow ovos-config 3.x [\#32](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/pull/32) ([JarbasAl](https://github.com/JarbasAl))
+
 ## [1.1.1a1](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/tree/1.1.1a1) (2026-08-14)
 
 [Full Changelog](https://github.com/OpenVoiceOS/ovos-wolfram-alpha-plugin/compare/1.1.0a1...1.1.1a1)
